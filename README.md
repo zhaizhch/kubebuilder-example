@@ -1,3 +1,81 @@
+# How to create a multi-version crd
+## scaffolding out our project
+```sh
+# create a project directory, and then run the init command.
+mkdir project
+cd project
+# we'll use a domain of tutorial.kubebuilder.io,
+# so all API groups will be <group>.tutorial.kubebuilder.io.
+# before init it, you should make sure upgrade kubebuilder to the latest version(support go/v4)
+kubebuilder init --domain tutorial.kubebuilder.io --repo tutorial.kubebuilder.io/project --plugins=go/v4
+```
+## create api and controller
+```sh
+kubebuilder create api --group batch --version v1 --kind CronJob
+```
+press y for “Create Resource” and “Create Controller”
+
+## design the api and controller depending on your business scenario
+you can learn from official website(https://book.kubebuilder.io/, recommend) or Chinese website(https://cloudnative.to/kubebuilder/)(it is not the latest version) or our code
+```attention
+you should add RBAC markers for you have the right permission when you run it
+// +kubebuilder:rbac:groups=batch.tutorial.kubebuilder.io,resources=cronjobs,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=batch.tutorial.kubebuilder.io,resources=cronjobs/status,verbs=get;update;patch
+```
+## create webhook
+```sh
+kubebuilder create webhook --group batch --version v1 --kind CronJob --defaulting --programmatic-validation
+```
+## deploy cert-manager
+```sh
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.0/cert-manager.yaml
+# you should create secret used for controller
+kubectl apply -f config/certmanager/certificate.yaml
+```
+## running and deploy the controller
+```sh
+# generate the manifests
+make manifests
+# install crd
+make install
+#run controller
+export ENABLE_WEBHOOKS=false #used for close the webhook, if you create multi-version crd, it must be true
+make run
+# build controller image, you can set the image that you can push to your harbor
+make docker-build docker-push IMG=<some-registry>/<project-name>:tag
+make deploy IMG=<some-registry>/<project-name>:tag
+```
+## create the second version of crd
+```sh
+kubebuilder create api --group batch --version v2 --kind CronJob
+```
+Press y for “Create Resource” and n for “Create Controller”
+## conversion
+you can learn how to convert between diffrent version of crd form official website(https://book.kubebuilder.io/multiversion-tutorial/conversion-concepts.html).
+you should create file project/api/v1/*_conversion.go and project/apu/v2/*_conversion.go.
+you should implement the hub and spokes in the file created by the previous step
+
+you should create webhook of v2
+```sh
+kubebuilder create webhook --group batch --version v1 --kind CronJob --conversion
+```
+## Testing
+before you deploy, you should 
+```sh
+Enable patches/webhook_in_<kind>.yaml and patches/cainjection_in_<kind>.yaml in config/crd/kustomization.yaml file.
+
+Enable ../certmanager and ../webhook directories under the bases section in config/default/kustomization.yaml file.
+
+Enable manager_webhook_patch.yaml and webhookcainjection_patch.yaml under the patches section in config/default/kustomization.yaml file.
+
+Enable all the vars under the CERTMANAGER section in config/default/kustomization.yaml file.
+```
+
+
+
+
+
+
 # crd
 // TODO(user): Add simple overview of use/purpose
 
