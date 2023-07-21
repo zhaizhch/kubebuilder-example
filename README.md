@@ -36,11 +36,9 @@ kubectl apply -f config/certmanager/certificate.yaml
 ## running and deploy the controller
 ```sh
 # generate the manifests, modify the Makefile manifests to 
-```sh
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd:maxDescLen=0 webhook paths="./..." output:crd:artifacts:config=config/crd/bases
-```
 #avoid the error that length too long
 make manifests
 # install crd
@@ -50,9 +48,9 @@ export ENABLE_WEBHOOKS=false #used for close the webhook, if you create multi-ve
 make run
 # build controller image, you can set the image that you can push to your harbor
 # modify the Dockerfile 
-```sh
-RUN GO111MODULE=on GOPROXY=https://mirrors.aliyun.com/goproxy/ CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -a -o manager cmd/main.go
-```
+
+#RUN GO111MODULE=on GOPROXY=https://mirrors.aliyun.com/goproxy/ CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -a #-o manager cmd/main.go
+
 make docker-build docker-push IMG=<some-registry>/<project-name>:tag
 make deploy IMG=<some-registry>/<project-name>:tag
 ```
