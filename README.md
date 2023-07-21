@@ -1,4 +1,5 @@
 # How to create a multi-version crd
+It is a learn example from website, the most content is the same as official website, but fix some error that I met when learn from official website
 ## scaffolding out our project
 ```sh
 # create a project directory, and then run the init command.
