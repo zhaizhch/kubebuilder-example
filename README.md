@@ -71,6 +71,10 @@ Enable manager_webhook_patch.yaml and webhookcainjection_patch.yaml under the pa
 
 Enable all the vars under the CERTMANAGER section in config/default/kustomization.yaml file.
 ```
+in config/default/kustomization.yaml
+1. change the namespace name to system
+2. comment the namePrefix: crd-
+then, you can deploy the resource in system namespace, or you will deploy them in crd-system, when you test, you may meet some error occured by it.
 
 
 
